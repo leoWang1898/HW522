@@ -1,0 +1,177 @@
+import csv
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.spatial.distance import pdist
+
+df=pd.read_csv("seeds.csv",usecols=(0,4))
+
+def MaxMinNormalization(x,Max,Min):
+    x = (x - Min) / (Max - Min)
+    return x
+area_A_Nor = [0]*210
+kernel_width_Nor = [0]*210
+for i in range(len(df.area_A)):
+     area_A_Nor[i] = MaxMinNormalization(df.area_A[i], np.max(df.area_A), np.min(df.area_A))
+     kernel_width_Nor[i] = MaxMinNormalization(df.kernel_width[i], np.max(df.kernel_width), np.min(df.kernel_width))
+
+def Standardization(x, mean, std):
+    x = (x - mean)/std
+    return x
+area_A_Sta = [0]*210
+kernel_width_Sta = [0]*210
+for i in range(len(df.area_A)):
+    area_A_Sta[i] = Standardization(df.area_A[i], np.mean(df.area_A), np.std(df.area_A))
+    kernel_width_Sta[i] = Standardization(df.kernel_width[i], np.mean(df.kernel_width), np.std(df.kernel_width))
+
+area_A_Nor = np.array(area_A_Nor)
+kernel_width_Nor = np.array(kernel_width_Nor)
+area_A_Sta = np.array(area_A_Sta)
+kernel_width_Sta = np.array(kernel_width_Sta)
+
+def answerA():
+    print("The range of normalization dataset of area_A is ", end = '')
+    print([np.min(area_A_Nor), np.max(area_A_Nor)])
+    print("The range of standardization dataset of area_A is ", end = '')
+    print([np.min(area_A_Sta), np.max(area_A_Sta)])
+    print("The range of normalization dataset of kernel_width is ", end='')
+    print([np.min(kernel_width_Nor), np.max(kernel_width_Nor)])
+    print("The range of standardization dataset of kernel_width is ", end='')
+    print([np.min(kernel_width_Sta), np.max(kernel_width_Sta)])
+
+
+# plt.figure();
+# plt.su
+# plt.plot(2,2,1)
+# plt.plot(df.area_A, df.kernel_width ,'o')
+# plt.title('Raw')
+#
+# plt.subplot(2,2,2)
+# plt.plot(area_A_Nor, kernel_width_Nor ,'bo')
+# plt.title('Normalization')
+#
+# plt.subplot(2,2,3)
+# plt.plot(area_A_Sta, kernel_width_Sta ,'ro')
+# plt.title('Standardization')
+
+#plt.show()
+
+P_Raw = [np.mean(df.area_A), np.mean(df.kernel_width)]
+P_Nor = [np.mean(area_A_Nor), np.mean(kernel_width_Nor)]
+P_Sta = [np.mean(area_A_Sta), np.mean(kernel_width_Sta)]
+
+# EUC_DISTANCE
+P_Raw_Euc = [0]*210
+P_Nor_Euc = [0]*210
+P_Sta_Euc = [0]*210
+for i in range(len(df.area_A)):
+    P_Raw_Euc[i] = np.linalg.norm(np.array(P_Raw) - np.array([df.area_A[i], df.kernel_width[i]]))
+    P_Nor_Euc[i] = np.linalg.norm(np.array(P_Nor) - np.array([area_A_Nor[i], kernel_width_Nor[i]]))
+    P_Sta_Euc[i] = np.linalg.norm(np.array(P_Sta) - np.array([area_A_Sta[i], kernel_width_Sta[i]]))
+
+# Mahalanobis distance
+# P_Raw_Mah = [0]*210
+# P_Nor_Mah = [0]*210
+# P_Sta_Mah = [0]*210
+# for i in range(len(df.area_A)):
+#     P_Raw_Mah[i] = pdist(np.vstack([np.array(P_Raw),np.array([df.area_A[i], df.kernel_width[i]])]).T, 'mahalanobis')
+#     P_Nor_Mah[i] = pdist(np.vstack([np.array(P_Nor),np.array([area_A_Nor[i], kernel_width_Nor[i]])]).T, 'mahalanobis')
+#     P_Sta_Mah[i] = pdist(np.vstack([np.array(P_Sta),np.array([area_A_Sta[i], kernel_width_Sta[i]])]).T, 'mahalanobis')
+
+#CITY BLOCK DISTANCE
+P_Raw_CBD = [0]*210
+P_Nor_CBD = [0]*210
+P_Sta_CBD = [0]*210
+for i in range(len(df.area_A)):
+    P_Raw_CBD[i] = np.sum(np.abs(np.array(P_Raw) - np.array([df.area_A[i], df.kernel_width[i]])))
+    P_Nor_CBD[i] = np.sum(np.abs(np.array(P_Nor) - np.array([area_A_Nor[i], kernel_width_Nor[i]])))
+    P_Sta_CBD[i] = np.sum(np.abs(np.array(P_Sta) - np.array([area_A_Sta[i], kernel_width_Sta[i]])))
+
+#Chebyshev Distance
+P_Raw_Che = [0]*210
+P_Nor_Che = [0]*210
+P_Sta_Che = [0]*210
+for i in range(len(df.area_A)):
+    P_Raw_Che[i] = np.max(np.abs(np.array(P_Raw) - np.array([df.area_A[i], df.kernel_width[i]])))
+    P_Nor_Che[i] = np.max(np.abs(np.array(P_Nor) - np.array([area_A_Nor[i], kernel_width_Nor[i]])))
+    P_Sta_Che[i] = np.max(np.abs(np.array(P_Sta) - np.array([area_A_Sta[i], kernel_width_Sta[i]])))
+
+#Minkowski Distance
+P_Raw_Min = [0]*210
+P_Nor_Min = [0]*210
+P_Sta_Min = [0]*210
+for i in range(len(df.area_A)):
+    P_Raw_Min[i] = pdist(np.vstack([np.array(P_Raw),np.array([df.area_A[i], df.kernel_width[i]])]), 'minkowski',p = 3)
+    P_Nor_Min[i] = pdist(np.vstack([np.array(P_Nor),np.array([area_A_Nor[i], kernel_width_Nor[i]])]), 'minkowski',p = 3)
+    P_Sta_Min[i] = pdist(np.vstack([np.array(P_Sta),np.array([area_A_Sta[i], kernel_width_Sta[i]])]), 'minkowski',p = 3)
+
+#Cosine distance
+P_Raw_Cos = [0]*210
+P_Nor_Cos = [0]*210
+P_Sta_Cos = [0]*210
+for i in range(len(df.area_A)):
+    P_Raw_Cos[i] = np.dot(np.array(P_Raw),np.array([df.area_A[i], df.kernel_width[i]]))/(np.linalg.norm(np.array(P_Raw))*(np.linalg.norm(np.array([df.area_A[i], df.kernel_width[i]]))))
+    P_Nor_Cos[i] = np.dot(np.array(P_Nor),np.array([area_A_Nor[i], kernel_width_Nor[i]]))/(np.linalg.norm(np.array(P_Nor))*(np.linalg.norm(np.array([area_A_Nor[i], kernel_width_Nor[i]]))))
+    P_Sta_Cos[i] = np.dot(np.array(P_Sta),np.array([area_A_Sta[i], kernel_width_Sta[i]]))/(np.linalg.norm(np.array(P_Sta))*(np.linalg.norm(np.array([area_A_Sta[i], kernel_width_Sta[i]]))))
+
+# Canberra distance
+P_Raw_Can = [0]*210
+P_Nor_Can = [0]*210
+P_Sta_Can = [0]*210
+for i in range(len(df.area_A)):
+    P_Raw_Can[i] = pdist(np.vstack([np.array(P_Raw),np.array([df.area_A[i], df.kernel_width[i]])]), 'canberra')
+    P_Nor_Can[i] = pdist(np.vstack([np.array(P_Nor),np.array([area_A_Nor[i], kernel_width_Nor[i]])]), 'canberra')
+    P_Sta_Can[i] = pdist(np.vstack([np.array(P_Sta),np.array([area_A_Sta[i], kernel_width_Sta[i]])]), 'canberra')
+
+#Raw dataset closest 10
+P_Raw_Euc_10 = [0]*10
+P_Raw_Cos_10 = [0]*10
+P_Raw_Can_10 = [0]*10
+P_Raw_Mah_10 = [0]*10
+P_Raw_Min_10 = [0]*10
+P_Raw_CBD_10 = [0]*10
+P_Raw_Che_10 = [0]*10
+for i in range(10):
+    P_Raw_Euc_10[i] = [df.area_A[np.argsort(P_Raw_Euc)[i]], df.kernel_width[np.argsort(P_Raw_Euc)[i]]]
+    P_Raw_Cos_10[i] = [df.area_A[np.argsort(P_Raw_Cos)[i]], df.kernel_width[np.argsort(P_Raw_Cos)[i]]]
+    P_Raw_Can_10[i] = [df.area_A[np.argsort(P_Raw_Can)[i]], df.kernel_width[np.argsort(P_Raw_Can)[i]]]
+    #P_Raw_Mah_10[i] = [df.area_A[[np.argsort[0](P_Raw_Mah)[i]]], df.kernel_width[[np.argsort[0](P_Raw_Mah)[i]]]]
+    P_Raw_Min_10[i] = [df.area_A[np.argsort(P_Raw_Min)[i]], df.kernel_width[np.argsort(P_Raw_Min)[i]]]
+    P_Raw_CBD_10[i] = [df.area_A[np.argsort(P_Raw_CBD)[i]], df.kernel_width[np.argsort(P_Raw_CBD)[i]]]
+    P_Raw_Che_10[i] = [df.area_A[np.argsort(P_Raw_Che)[i]], df.kernel_width[np.argsort(P_Raw_Che)[i]]]
+
+#Normalization dataset closest 10
+P_Nor_Euc_10 = [0]*10
+P_Nor_Cos_10 = [0]*10
+P_Nor_Can_10 = [0]*10
+P_Nor_Mah_10 = [0]*10
+P_Nor_Min_10 = [0]*10
+P_Nor_CBD_10 = [0]*10
+P_Nor_Che_10 = [0]*10
+for i in range(10):
+    P_Nor_Euc_10[i] = [area_A_Nor[np.argsort(P_Nor_Euc)[i]], kernel_width_Nor[np.argsort(P_Nor_Euc)[i]]]
+    P_Nor_Cos_10[i] = [area_A_Nor[np.argsort(P_Nor_Cos)[i]], kernel_width_Nor[np.argsort(P_Nor_Cos)[i]]]
+    P_Nor_Can_10[i] = [area_A_Nor[np.argsort(P_Nor_Can)[i]], kernel_width_Nor[np.argsort(P_Nor_Can)[i]]]
+    #P_Nor_Mah_10[i] = [area_A_Nor[[np.argsort(P_Nor_Mah)[i]]], kernel_width_Nor[[np.argsort(P_Nor_Mah)[i]]]]
+    P_Nor_Min_10[i] = [area_A_Nor[np.argsort(P_Nor_Min)[i]], kernel_width_Nor[np.argsort(P_Nor_Min)[i]]]
+    P_Nor_CBD_10[i] = [area_A_Nor[np.argsort(P_Nor_CBD)[i]], kernel_width_Nor[np.argsort(P_Nor_CBD)[i]]]
+    P_Nor_Che_10[i] = [area_A_Nor[np.argsort(P_Nor_Che)[i]], kernel_width_Nor[np.argsort(P_Nor_Che)[i]]]
+
+#Standardization dataset closest 10
+P_Sta_Euc_10 = [0]*10
+P_Sta_Cos_10 = [0]*10
+P_Sta_Can_10 = [0]*10
+P_Sta_Mah_10 = [0]*10
+P_Sta_Min_10 = [0]*10
+P_Sta_CBD_10 = [0]*10
+P_Sta_Che_10 = [0]*10
+for i in range(10):
+    P_Sta_Euc_10[i] = [area_A_Sta[np.argsort(P_Sta_Euc)[i]], kernel_width_Sta[np.argsort(P_Sta_Euc)[i]]]
+    P_Sta_Cos_10[i] = [area_A_Sta[np.argsort(P_Sta_Cos)[i]], kernel_width_Sta[np.argsort(P_Sta_Cos)[i]]]
+    P_Sta_Can_10[i] = [area_A_Sta[np.argsort(P_Sta_Can)[i]], kernel_width_Sta[np.argsort(P_Sta_Can)[i]]]
+   # P_Sta_Mah_10[i] = [area_A_Sta[[np.argsort(P_Sta_Mah)[i]]], kernel_width_Sta[[np.argsort(P_Sta_Mah)[i]]]]
+    P_Sta_Min_10[i] = [area_A_Sta[np.argsort(P_Sta_Min)[i]], kernel_width_Sta[np.argsort(P_Sta_Min)[i]]]
+    P_Sta_CBD_10[i] = [area_A_Sta[np.argsort(P_Sta_CBD)[i]], kernel_width_Sta[np.argsort(P_Sta_CBD)[i]]]
+    P_Sta_Che_10[i] = [area_A_Sta[np.argsort(P_Sta_Che)[i]], kernel_width_Sta[np.argsort(P_Sta_Che)[i]]]
+
+#Circle plot
